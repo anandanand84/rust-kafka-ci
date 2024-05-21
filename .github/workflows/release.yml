@@ -55,6 +55,13 @@ jobs:
         run: |
           vcpkg install openssl:x64-windows-static-md
       
+      - name: Set OpenSSL environment variables
+        run: |
+          $opensslRoot = (vcpkg list openssl --x-json | ConvertFrom-Json).results[0].root
+          $env:OPENSSL_ROOT_DIR = $opensslRoot
+          $env:OPENSSL_INCLUDE_DIR = "$opensslRoot\include"
+          $env:OPENSSL_LIB_DIR = "$opensslRoot\lib"
+          
       - name: Cache Cargo registry index
         uses: actions/cache@v4
         with:
