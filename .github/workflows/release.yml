@@ -44,7 +44,9 @@ jobs:
           $ProgressPreference = 'SilentlyContinue'
           Invoke-WebRequest -Uri "https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-windows-x86_64.msi" -OutFile "cmake-3.21.0-windows-x86_64.msi"
           Start-Process msiexec.exe -ArgumentList '/i cmake-3.21.0-windows-x86_64.msi /quiet /norestart' -NoNewWindow -Wait
-          RefreshEnv
+          $cmakePath = "C:\Program Files\CMake\bin"
+          $env:Path = "$cmakePath;$env:Path"
+          [System.Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
 
       - name: Set VCPKG_ROOT
         run: echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
