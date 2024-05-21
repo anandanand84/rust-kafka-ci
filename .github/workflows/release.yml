@@ -53,7 +53,7 @@ jobs:
 
       - name: Install dependencies via vcpkg and Chocolatey
         run: |
-          vcpkg install openssl:x64-windows-static-md
+          vcpkg install openssl:x64-windows-static-md-release
       
       - name: Set OpenSSL environment variables
         run: |
@@ -61,7 +61,7 @@ jobs:
           $env:OPENSSL_ROOT_DIR = $opensslRoot
           $env:OPENSSL_INCLUDE_DIR = "$opensslRoot\include"
           $env:OPENSSL_LIB_DIR = "$opensslRoot\lib"
-          
+
       - name: Cache Cargo registry index
         uses: actions/cache@v4
         with:
