@@ -1,0 +1,83 @@
+name: RELEASE
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  checks: write
+
+jobs:
+  windows-vcpkg:
+    name: windows-vcpkg
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Debug info
+        run: echo "Workflow triggered on ${{ github.event_name }} for branch ${{ github.ref }}"
+
+      - name: Install Rust
+        uses: sfackler/actions/rustup@master
+
+      - name: Check Rust version
+        run: echo "version=$(rustc --version)" >> $GITHUB_OUTPUT
+        id: rust-version
+
+      - name: Install CMake
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri "https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-windows-x86_64.msi" -OutFile "cmake-3.21.0-windows-x86_64.msi"
+          Start-Process msiexec.exe -ArgumentList '/i cmake-3.21.0-windows-x86_64.msi /quiet /norestart' -NoNewWindow -Wait
+          RefreshEnv
+
+      - name: Set VCPKG_ROOT
+        run: echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Install dependencies via vcpkg and Chocolatey
+        run: |
+          vcpkg install openssl:x64-windows-static-md
+      
+      - name: Cache Cargo registry index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry/index
+          key: index-${{ runner.os }}-${{ github.run_number }}
+          restore-keys: |
+            index-${{ runner.os }}-
+
+      - name: Generate Cargo lockfile
+        run: cargo generate-lockfile
+
+      - name: Cache Cargo registry cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry/cache
+          key: registry-${{ runner.os }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Fetch Cargo dependencies
+        run: cargo fetch
+
+      - name: Cache target directory
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: target-${{ github.job }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: test
+        run: cargo build
