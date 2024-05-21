@@ -56,11 +56,15 @@ jobs:
           vcpkg install openssl:x64-windows-static-md-release
       
       - name: Set OpenSSL environment variables
+        shell: pwsh
         run: |
-          $opensslRoot = (vcpkg list openssl --x-json | ConvertFrom-Json).results[0].root
+          $opensslRoot = "C:/vcpkg/packages/openssl_x64-windows-static-md-release"
           $env:OPENSSL_ROOT_DIR = $opensslRoot
-          $env:OPENSSL_INCLUDE_DIR = "$opensslRoot\include"
-          $env:OPENSSL_LIB_DIR = "$opensslRoot\lib"
+          $env:OPENSSL_INCLUDE_DIR = "$opensslRoot/include"
+          $env:OPENSSL_LIB_DIR = "$opensslRoot/lib"
+          [System.Environment]::SetEnvironmentVariable("OPENSSL_ROOT_DIR", $opensslRoot, [System.EnvironmentVariableTarget]::Process)
+          [System.Environment]::SetEnvironmentVariable("OPENSSL_INCLUDE_DIR", "$opensslRoot/include", [System.EnvironmentVariableTarget]::Process)
+          [System.Environment]::SetEnvironmentVariable("OPENSSL_LIB_DIR", "$opensslRoot/lib", [System.EnvironmentVariableTarget]::Process)
 
       - name: Cache Cargo registry index
         uses: actions/cache@v4
