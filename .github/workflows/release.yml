@@ -53,12 +53,12 @@ jobs:
 
       - name: Install dependencies via vcpkg and Chocolatey
         run: |
-          vcpkg install openssl:x64-windows-static-md-release
+          vcpkg install openssl:x64-windows-static-md
       
       - name: Set OpenSSL environment variables
         shell: pwsh
         run: |
-          $opensslRoot = "C:/vcpkg/packages/openssl_x64-windows-static-md-release"
+          $opensslRoot = "C:/vcpkg/packages/openssl_x64-windows-static-md"
           $env:OPENSSL_ROOT_DIR = $opensslRoot
           $env:OPENSSL_INCLUDE_DIR = "$opensslRoot/include"
           $env:OPENSSL_LIB_DIR = "$opensslRoot/lib"
